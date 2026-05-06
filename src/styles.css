@@ -1,0 +1,9 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #080f1a;
+  color: #d8f5f2;
+  -webkit-font-smoothing: antialiased;
+}

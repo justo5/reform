@@ -1,0 +1,158 @@
+<div class="app">
+  <header class="header">
+    <div class="logo-wrap">
+      <img src="logo.png" alt="Reform logo" class="logo-img" />
+      <h1 class="logo">reform<span class="logo-dot">.</span></h1>
+    </div>
+    <p class="tagline">Blur padding — 9:16 &amp; 4:5</p>
+  </header>
+
+  <main class="main">
+
+    <!-- ── Format selector ── -->
+    <section class="format-selector" aria-label="Seleccionar formato de salida">
+      @for (fmt of formats; track fmt.ratio) {
+        <button
+          class="format-btn"
+          [class.active]="selectedFormat().ratio === fmt.ratio"
+          [disabled]="isProcessing()"
+          (click)="selectFormat(fmt)">
+          <span class="format-ratio">{{ fmt.ratio }}</span>
+          <span class="format-desc">{{ fmt.label }}</span>
+        </button>
+      }
+    </section>
+
+    <!-- ── Drop zone ── -->
+    <section
+      class="dropzone"
+      [class.dragging]="isDragging()"
+      [class.has-file]="!!previewUrl()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="!previewUrl() && openFilePicker()"
+      role="button"
+      aria-label="Soltar archivo aquí o hacer click para seleccionar">
+
+      @if (!previewUrl()) {
+        <div class="dropzone-empty">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Arrastra una imagen o video</p>
+          <span class="hint">o haz click para seleccionar</span>
+        </div>
+      } @else {
+        <!-- CSS blur-padding preview -->
+        <div
+          class="preview-frame"
+          [style.aspect-ratio]="previewRatio()">
+
+          <!-- blurred background layer (CSS) -->
+          <div
+            class="preview-bg"
+            [style.background-image]="'url(' + previewUrl() + ')'">
+          </div>
+
+          <!-- foreground: fit image/video centered -->
+          @if (mediaType() === 'image') {
+            <img
+              class="preview-fg"
+              [src]="previewUrl()"
+              alt="Preview" />
+          } @else {
+            <video
+              class="preview-fg"
+              [src]="previewUrl()"
+              autoplay
+              muted
+              loop
+              playsinline>
+            </video>
+          }
+        </div>
+
+        <!-- change file button -->
+        <button
+          class="change-btn"
+          [disabled]="isProcessing()"
+          (click)="$event.stopPropagation(); openFilePicker()">
+          Cambiar archivo
+        </button>
+      }
+    </section>
+
+    <!-- ── Hidden file input ── -->
+    <input
+      #fileInput
+      type="file"
+      accept="image/*,video/*"
+      class="hidden"
+      (change)="onFileSelected($event)" />
+
+    <!-- ── Processing status ── -->
+    @if (processingState().status !== 'idle') {
+      <div class="status-bar" role="status" aria-live="polite">
+        <p class="status-message">{{ processingState().message }}</p>
+
+        @if (isProcessing()) {
+          <div class="progress-track" aria-label="Progreso de procesamiento">
+            <div
+              class="progress-fill"
+              [style.width.%]="processingState().progress">
+            </div>
+          </div>
+          @if (processingState().progress > 0) {
+            <span class="progress-label">{{ processingState().progress }}%</span>
+          }
+        }
+      </div>
+    }
+
+    <!-- ── Action buttons ── -->
+    <div class="actions">
+      <button
+        class="btn btn-primary"
+        [disabled]="!previewUrl() || isProcessing()"
+        (click)="process()">
+        @if (isProcessing()) {
+          <span class="spinner"></span>
+          Procesando…
+        } @else {
+          Aplicar blur padding
+        }
+      </button>
+
+      @if (isDone() && resultUrl()) {
+        <button class="btn btn-success" (click)="download()">
+          Descargar resultado
+        </button>
+      }
+    </div>
+
+    <!-- ── Result preview ── -->
+    @if (resultUrl()) {
+      <section class="result-section">
+        <h2 class="result-title">Resultado — {{ selectedFormat().ratio }}</h2>
+        <div
+          class="preview-frame result-frame"
+          [style.aspect-ratio]="previewRatio()">
+          @if (mediaType() === 'image') {
+            <img [src]="resultUrl()" alt="Resultado" class="result-media" />
+          } @else {
+            <video
+              [src]="resultUrl()"
+              class="result-media"
+              controls
+              playsinline>
+            </video>
+          }
+        </div>
+      </section>
+    }
+
+  </main>
+</div>
