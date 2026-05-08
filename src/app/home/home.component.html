@@ -1,0 +1,12 @@
+<div class="home">
+  <header class="home-header">
+    <h1 class="greeting">Hola equipo<span class="accent">!</span></h1>
+    <p class="subtitle">Elige una herramienta para empezar</p>
+  </header>
+
+  <main class="grid" aria-label="Aplicaciones disponibles">
+    @for (app of apps; track app.id) {
+      <app-card [app]="app" />
+    }
+  </main>
+</div>

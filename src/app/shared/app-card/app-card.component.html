@@ -1,0 +1,13 @@
+@if (app().available) {
+  <a class="card" [routerLink]="app().route" aria-label="Abrir {{ app().name }}">
+    <span class="card-name">{{ app().name }}</span>
+    <span class="card-desc">{{ app().description }}</span>
+    <span class="card-arrow">→</span>
+  </a>
+} @else {
+  <div class="card card--disabled" aria-disabled="true">
+    <span class="card-name">{{ app().name }}</span>
+    <span class="card-desc">{{ app().description }}</span>
+    <span class="card-badge">próximamente</span>
+  </div>
+}
