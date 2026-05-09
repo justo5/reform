@@ -13,5 +13,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./media-dl/media-dl.component').then(m => m.MediaDlComponent),
   },
+  {
+    path: 'img-optimizer',
+    loadComponent: () =>
+      import('./img-optimizer/img-optimizer.component').then(m => m.ImgOptimizerComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

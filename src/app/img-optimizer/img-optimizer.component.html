@@ -1,0 +1,135 @@
+<div class="app">
+  <header class="header">
+    <a class="back-link" routerLink="/" aria-label="Volver al inicio">← inicio</a>
+    <div class="brand">
+      <img src="logosinfondo.png" alt="Vamos Bien logo" class="brand-logo" />
+      <h1 class="greeting">Optimizer<span class="accent">.</span></h1>
+    </div>
+    <p class="subtitle">Comprime imágenes — reduce el peso sin perder calidad</p>
+  </header>
+
+  <main class="main">
+
+    <!-- ── Selector de formato ── -->
+    <section class="format-selector" aria-label="Formato de salida">
+      @for (fmt of formats; track fmt.mime) {
+        <button
+          class="format-btn"
+          [class.active]="outputFormat().mime === fmt.mime"
+          (click)="selectFormat(fmt)">
+          <span class="format-name">{{ fmt.label }}</span>
+          <span class="format-hint">{{ fmt.lossy ? 'con pérdida' : 'sin pérdida' }}</span>
+        </button>
+      }
+    </section>
+
+    <!-- ── Dropzone ── -->
+    <section
+      class="dropzone"
+      [class.dragging]="isDragging()"
+      [class.has-file]="!!previewUrl()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="!previewUrl() && openFilePicker()"
+      role="button"
+      aria-label="Soltar imagen aquí o hacer click para seleccionar">
+
+      @if (!previewUrl()) {
+        <div class="dropzone-empty">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Arrastra una imagen</p>
+          <span class="hint">o haz click para seleccionar · JPG, PNG, WebP</span>
+        </div>
+      } @else {
+        <img class="preview-img" [src]="resultUrl() ?? previewUrl()" alt="Preview" />
+        <button
+          class="change-btn"
+          (click)="$event.stopPropagation(); openFilePicker()">
+          Cambiar imagen
+        </button>
+      }
+    </section>
+
+    <!-- ── Hidden file input ── -->
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      class="hidden"
+      (change)="onFileSelected($event)" />
+
+    <!-- ── Control panel (visible tras cargar) ── -->
+    @if (previewUrl()) {
+      <section class="control-panel">
+
+        <!-- Tamaños -->
+        <div class="size-row">
+          <div class="size-card">
+            <span class="size-label">Original</span>
+            <span class="size-value">{{ formatBytes(originalSize()) }}</span>
+          </div>
+          <div class="size-arrow">→</div>
+          <div class="size-card" [class.size-card--result]="isDone()">
+            <span class="size-label">{{ outputFormat().label }}</span>
+            <span class="size-value">
+              @if (isProcessing()) {
+                <span class="size-computing">…</span>
+              } @else if (isDone()) {
+                {{ formatBytes(resultSize()) }}
+              } @else {
+                —
+              }
+            </span>
+          </div>
+          @if (isDone() && compressionRatio() > 0) {
+            <div class="savings-badge">−{{ compressionRatio() }}%</div>
+          }
+        </div>
+
+        <!-- Slider de calidad (solo para formatos lossy) -->
+        @if (isLossy()) {
+          <div class="slider-container">
+            <div class="slider-header">
+              <span class="slider-label">Calidad</span>
+              <span class="slider-value">{{ quality() }}%</span>
+            </div>
+            <input
+              type="range"
+              class="quality-slider"
+              min="1"
+              max="100"
+              [value]="quality()"
+              (input)="onQualityChange($event)"
+              aria-label="Calidad de compresión" />
+            <div class="slider-hints">
+              <span>Más compresión</span>
+              <span>Mayor calidad</span>
+            </div>
+          </div>
+        } @else {
+          <p class="lossless-note">PNG es sin pérdida — el tamaño depende del contenido de la imagen.</p>
+        }
+
+        <!-- Botón descargar -->
+        <button
+          class="btn btn-success"
+          [disabled]="!isDone() || isProcessing()"
+          (click)="download()">
+          @if (isProcessing()) {
+            <span class="spinner"></span>
+            Procesando…
+          } @else {
+            Descargar · {{ outputFormat().label }}
+          }
+        </button>
+
+      </section>
+    }
+
+  </main>
+</div>

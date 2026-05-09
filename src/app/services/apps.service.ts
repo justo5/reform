@@ -21,12 +21,12 @@ export class AppsService {
       icon: '📥',
     },
     {
-      id: 'placeholder-2',
-      name: 'próximamente',
-      description: 'Más herramientas en camino',
-      route: '',
-      available: false,
-      icon: '🚀',
+      id: 'img-optimizer',
+      name: 'Optimizer.',
+      description: 'Comprime imágenes sin perder demasiada calidad',
+      route: '/img-optimizer',
+      available: true,
+      icon: '🗜️',
     },
   ];
 }
