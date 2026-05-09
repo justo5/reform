@@ -84,25 +84,14 @@ export class MediaDlComponent {
     return `${base}_audio.m4a`;
   }
 
-  async download(url: string, filename?: string | null): Promise<void> {
+  download(url: string, filename?: string | null): void {
     if (this.downloading()) return;
     this.downloading.set(true);
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = blobUrl;
-      a.download = filename || 'video.mp4';
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-    } catch {
-      // CORS not available — abrir en pestaña para que el usuario guarde manualmente
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } finally {
-      this.downloading.set(false);
-    }
+    const params = new URLSearchParams({ url, filename: filename || 'video.mp4' });
+    const a = document.createElement('a');
+    a.href = `/api/proxy-download?${params}`;
+    a.click();
+    setTimeout(() => this.downloading.set(false), 1000);
   }
 
   reset(): void {

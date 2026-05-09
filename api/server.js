@@ -3,7 +3,7 @@
 const http = require('http');
 const { Readable } = require('stream');
 
-const COBALT = 'https://cobalt-production-b92e.up.railway.app/';
+const COBALT = process.env.COBALT_URL || 'https://cobalt-production-b92e.up.railway.app/';
 const PORT = process.env.PORT || 3000;
 
 function setCors(res) {

@@ -1,8 +1,16 @@
 services:
+  cobalt:
+    image: ghcr.io/imputnet/cobalt:10
+    restart: unless-stopped
+
   api:
     build:
       context: .
       target: api
+    environment:
+      - COBALT_URL=http://cobalt:9000/
+    depends_on:
+      - cobalt
     restart: unless-stopped
 
   web:
