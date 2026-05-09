@@ -37,55 +37,7 @@
       </div>
     </section>
 
-    <!-- ── Options ── -->
-    <section class="options-section" aria-label="Opciones de descarga">
-      <div class="option-group">
-        <span class="option-label">Calidad</span>
-        <div class="quality-toggle" [class.disabled]="isLoading() || audioOnly()">
-          <button
-            class="quality-btn"
-            [class.active]="quality() === '480'"
-            [disabled]="isLoading() || audioOnly()"
-            (click)="quality.set('480')">
-            480p
-          </button>
-          <button
-            class="quality-btn"
-            [class.active]="quality() === '720'"
-            [disabled]="isLoading() || audioOnly()"
-            (click)="quality.set('720')">
-            720p
-          </button>
-          <button
-            class="quality-btn"
-            [class.active]="quality() === '1080'"
-            [disabled]="isLoading() || audioOnly()"
-            (click)="quality.set('1080')">
-            1080p
-          </button>
-          <button
-            class="quality-btn"
-            [class.active]="quality() === '1440'"
-            [disabled]="isLoading() || audioOnly()"
-            (click)="quality.set('1440')">
-            1440p
-          </button>
-        </div>
-      </div>
 
-      <div class="option-group">
-        <span class="option-label">Solo audio</span>
-        <button
-          class="audio-toggle"
-          role="switch"
-          [attr.aria-checked]="audioOnly()"
-          [class.on]="audioOnly()"
-          [disabled]="isLoading()"
-          (click)="audioOnly.set(!audioOnly())">
-          <span class="toggle-thumb"></span>
-        </button>
-      </div>
-    </section>
 
     <!-- ── Loading ── -->
     @if (isLoading()) {
@@ -122,14 +74,6 @@
           (click)="download(directUrl()!, directFilename())">
           @if (downloading()) { Descargando… } @else { {{ directAudioUrl() ? 'Guardar video' : 'Guardar archivo' }} }
         </button>
-        @if (directAudioUrl()) {
-          <button
-            class="btn btn-secondary"
-            [disabled]="downloading()"
-            (click)="download(directAudioUrl()!, audioFilename(directFilename()))">
-            @if (downloading()) { Descargando… } @else { Guardar audio }
-          </button>
-        }
         @if (directFilename()) {
           <p class="result-filename">{{ directFilename() }}</p>
         }
@@ -162,11 +106,6 @@
           }
         </div>
 
-        @if (pickerAudio()) {
-          <button class="btn btn-secondary" [disabled]="downloading()" (click)="download(pickerAudio()!)">
-            @if (downloading()) { Descargando… } @else { Descargar solo audio }
-          </button>
-        }
       </div>
     }
 
