@@ -1,38 +1,57 @@
 .home {
   min-height: 100vh;
-  background: #080f1a;
-  color: #d8f5f2;
+  background: rgba(12, 10, 25, 0.4);
+  backdrop-filter: blur(60px) saturate(120%);
+  -webkit-backdrop-filter: blur(60px) saturate(120%);
+  color: #fff;
   font-family: 'Inter', system-ui, sans-serif;
   padding: 3rem 1.5rem 4rem;
-  max-width: 640px;
-  margin: 0 auto;
 }
 
 .home-header {
-  margin-bottom: 3rem;
+  max-width: 640px;
+  margin: 0 auto 3rem;
+  text-align: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-logo {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.35));
 }
 
 .greeting {
-  font-size: clamp(2.5rem, 8vw, 4rem);
+  font-size: clamp(2rem, 7vw, 3.5rem);
   font-weight: 900;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.04em;
   color: #fff;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .accent {
-  color: #00e5cc;
+  color: #F7941E;
 }
 
 .subtitle {
   margin-top: 0.75rem;
   font-size: 0.9rem;
-  color: #3a6060;
+  color: rgba(255, 255, 255, 0.55);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .grid {
+  max-width: 640px;
+  margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;

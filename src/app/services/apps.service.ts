@@ -10,6 +10,7 @@ export class AppsService {
       description: 'Blur padding para redes sociales',
       route: '/reform',
       available: true,
+      icon: '🖼️',
     },
     {
       id: 'media-dl',
@@ -17,6 +18,7 @@ export class AppsService {
       description: 'Descarga multimedia de cualquier enlace',
       route: '/media-dl',
       available: true,
+      icon: '📥',
     },
     {
       id: 'placeholder-2',
@@ -24,6 +26,7 @@ export class AppsService {
       description: 'Más herramientas en camino',
       route: '',
       available: false,
+      icon: '🚀',
     },
   ];
 }

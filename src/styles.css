@@ -1,9 +1,18 @@
 *, *::before, *::after { box-sizing: border-box; }
 
+@keyframes gradientFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 html, body {
   margin: 0;
   padding: 0;
-  background: #080f1a;
-  color: #d8f5f2;
+  min-height: 100vh;
+  background: linear-gradient(-45deg, #3A89C9, #93D04F, #E6332A, #F7941E);
+  background-size: 400% 400%;
+  animation: gradientFlow 12s ease infinite;
+  color: #fff;
   -webkit-font-smoothing: antialiased;
 }

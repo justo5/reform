@@ -4,4 +4,5 @@ export interface AppItem {
   description: string;
   route: string;
   available: boolean;
+  icon?: string;
 }
