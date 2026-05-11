@@ -31,6 +31,11 @@ export class MediaProcessorService {
   processVideo(file: File, outW: number, outH: number): Promise<Blob> {
     this.setState({ status: 'processing', progress: 0, message: 'Procesando video…' });
 
+    // Create AudioContext here — this method is called from a button click (user gesture).
+    // Creating it inside loadedmetadata would be outside that gesture context and
+    // Chrome would leave it suspended, silencing the audio in the output.
+    const audioCtx = new AudioContext();
+
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
       video.src = URL.createObjectURL(file);
@@ -41,11 +46,19 @@ export class MediaProcessorService {
       canvas.height = outH;
       const ctx = canvas.getContext('2d')!;
 
+      // Small scratch canvases for cheap blur: process at 25% resolution then upscale.
+      // Reduces blur cost ~16× (fewer pixels) with identical visual result.
+      const bgW = Math.ceil(outW * 0.25);
+      const bgH = Math.ceil(outH * 0.25);
+      const bgRaw  = Object.assign(document.createElement('canvas'), { width: bgW, height: bgH });
+      const bgBlur = Object.assign(document.createElement('canvas'), { width: bgW, height: bgH });
+      const bgRawCtx  = bgRaw.getContext('2d')!;
+      const bgBlurCtx = bgBlur.getContext('2d')!;
+
       video.addEventListener('loadedmetadata', () => {
         const duration = video.duration;
 
         // Route audio through AudioContext so it's captured but not played aloud.
-        const audioCtx = new AudioContext();
         const audioSrc  = audioCtx.createMediaElementSource(video);
         const audioDest = audioCtx.createMediaStreamDestination();
         audioSrc.connect(audioDest);
@@ -68,20 +81,53 @@ export class MediaProcessorService {
         let raf = 0;
         const tick = () => {
           if (video.paused || video.ended) return;
-          this.drawBlurBg(ctx, video, outW, outH);
+          this.drawBlurBgFast(ctx, bgRawCtx, bgBlurCtx, video, outW, outH);
           this.drawFitFg(ctx, video, outW, outH);
           this.setState({ progress: Math.round((video.currentTime / duration) * 100) });
           raf = requestAnimationFrame(tick);
         };
 
         recorder.start();
-        video.play().then(tick).catch(reject);
+        // Resume AudioContext before playing — ensures the audio graph is running
+        // before any samples flow through it.
+        audioCtx.resume()
+          .then(() => video.play())
+          .then(tick)
+          .catch(reject);
         video.addEventListener('ended', () => { cancelAnimationFrame(raf); recorder.stop(); });
         video.addEventListener('error',  () => { cancelAnimationFrame(raf); reject(new Error('Error al leer el video')); });
       });
 
-      video.addEventListener('error', reject);
+      video.addEventListener('error', () => { audioCtx.close(); reject(new Error('Error al leer el video')); });
     });
+  }
+
+  // 3-pass blur used for video: operate at 25% resolution then upscale — ~16× cheaper.
+  private drawBlurBgFast(
+    ctx: CanvasRenderingContext2D,
+    rawCtx: CanvasRenderingContext2D,
+    blurCtx: CanvasRenderingContext2D,
+    src: HTMLVideoElement,
+    w: number,
+    h: number
+  ): void {
+    const { sw, sh } = naturalSize(src);
+    const bgW = rawCtx.canvas.width, bgH = rawCtx.canvas.height;
+    const scale = Math.max(bgW / sw, bgH / sh) * 1.08;
+    const dw = sw * scale, dh = sh * scale;
+    const dx = (bgW - dw) / 2, dy = (bgH - dh) / 2;
+
+    // Pass 1: draw current video frame at small size (no filter).
+    rawCtx.drawImage(src, dx, dy, dw, dh);
+
+    // Pass 2: blur the small frame (8px here ≈ 32px at full scale after upscaling).
+    blurCtx.save();
+    blurCtx.filter = 'blur(8px) brightness(0.72) saturate(1.2)';
+    blurCtx.drawImage(rawCtx.canvas, 0, 0);
+    blurCtx.restore();
+
+    // Pass 3: scale the blurred small canvas up to the output canvas (no filter).
+    ctx.drawImage(blurCtx.canvas, 0, 0, w, h);
   }
 
   private drawBlurBg(ctx: CanvasRenderingContext2D, src: DrawSource, w: number, h: number): void {
