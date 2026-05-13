@@ -18,5 +18,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./img-optimizer/img-optimizer.component').then(m => m.ImgOptimizerComponent),
   },
+  {
+    path: 'logo-combo',
+    loadComponent: () =>
+      import('./logo-combo/logo-combo.component').then(m => m.LogoComboComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

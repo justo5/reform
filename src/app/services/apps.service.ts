@@ -28,5 +28,13 @@ export class AppsService {
       available: true,
       icon: '🗜️',
     },
+    {
+      id: 'logo-combo',
+      name: 'Logo+.',
+      description: 'Combina tu logo con el de Vamos Bien',
+      route: '/logo-combo',
+      available: true,
+      icon: '🤝',
+    },
   ];
 }

@@ -1,0 +1,100 @@
+<div class="app">
+  <header class="header">
+    <a class="back-link" routerLink="/" aria-label="Volver al inicio">← inicio</a>
+    <div class="brand">
+      <img src="logosinfondo_opt.webp" alt="Vamos Bien logo" class="brand-logo" />
+      <h1 class="greeting">Logo<span class="accent">+</span></h1>
+    </div>
+    <p class="subtitle">Combina tu logo con el de Vamos Bien</p>
+  </header>
+
+  <main class="main">
+
+    <!-- Vista previa en tiempo real -->
+    <section class="preview-section" aria-label="Vista previa">
+      <div class="preview-composite">
+        <img src="plus.png" alt="Base Vamos Bien" class="preview-base" />
+        @if (userLogoUrl()) {
+          <img [src]="userLogoUrl()" alt="Tu logo" class="preview-user-logo" />
+        } @else {
+          <div class="preview-placeholder">
+            <span>Tu logo aquí</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Zona de subida del logo del usuario -->
+    <section
+      class="dropzone"
+      [class.dragging]="isDragging()"
+      [class.has-file]="!!userLogoUrl()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+      (click)="!userLogoUrl() && openFilePicker()"
+      role="button"
+      aria-label="Subir tu logo">
+
+      @if (!userLogoUrl()) {
+        <div class="dropzone-empty">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <p>Arrastra tu logo aquí</p>
+          <span class="hint">PNG, WebP o JPG — fondo transparente recomendado</span>
+        </div>
+      } @else {
+        <div class="dropzone-logo-preview">
+          <img [src]="userLogoUrl()" alt="Tu logo" class="logo-thumb" />
+        </div>
+        <button
+          class="change-btn"
+          [disabled]="isProcessing()"
+          (click)="$event.stopPropagation(); openFilePicker()">
+          Cambiar logo
+        </button>
+      }
+    </section>
+
+    <!-- Input de archivo oculto -->
+    <input
+      #fileInput
+      type="file"
+      accept="image/*"
+      class="hidden"
+      (change)="onFileSelected($event)" />
+
+    <!-- Botones de acción -->
+    <div class="actions">
+      <button
+        class="btn btn-primary"
+        [disabled]="!userLogoUrl() || isProcessing()"
+        (click)="process()">
+        @if (isProcessing()) {
+          <span class="spinner"></span>
+          Generando…
+        } @else {
+          Generar combinación
+        }
+      </button>
+
+      @if (resultUrl()) {
+        <button class="btn btn-success" (click)="download()">
+          Descargar PNG
+        </button>
+      }
+    </div>
+
+    <!-- Resultado -->
+    @if (resultUrl()) {
+      <section class="result-section">
+        <h2 class="result-title">Resultado</h2>
+        <img [src]="resultUrl()" alt="Logo combinado" class="result-img" />
+      </section>
+    }
+
+  </main>
+</div>
