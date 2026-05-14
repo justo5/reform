@@ -20,8 +20,8 @@ export class MediaProcessorService {
       this.setState({ status: 'processing', progress: 0, message: 'Cargando conversor…' });
       this.ffmpeg = new FFmpeg();
       await this.ffmpeg.load({
-        coreURL: await toBlobURL('/ffmpeg/ffmpeg-core.js', 'text/javascript'),
-        wasmURL: await toBlobURL('/ffmpeg/ffmpeg-core.wasm', 'application/wasm'),
+        coreURL: await toBlobURL('/ffmpeg/ffmpeg-core.js?ngsw-bypass=true', 'text/javascript'),
+        wasmURL: await toBlobURL('/ffmpeg/ffmpeg-core.wasm?ngsw-bypass=true', 'application/wasm'),
       });
     }
 
