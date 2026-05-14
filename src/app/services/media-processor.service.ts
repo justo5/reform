@@ -18,11 +18,10 @@ export class MediaProcessorService {
   async convertToMp4(blob: Blob): Promise<Blob> {
     if (!this.ffmpeg) {
       this.setState({ status: 'processing', progress: 0, message: 'Cargando conversor…' });
-      const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
       this.ffmpeg = new FFmpeg();
       await this.ffmpeg.load({
-        coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
-        wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),
+        coreURL: await toBlobURL('/ffmpeg/ffmpeg-core.js', 'text/javascript'),
+        wasmURL: await toBlobURL('/ffmpeg/ffmpeg-core.wasm', 'application/wasm'),
       });
     }
 

@@ -48,6 +48,16 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "ffmpeg-core.js",
+                "input": "node_modules/@ffmpeg/core/dist/umd",
+                "output": "ffmpeg"
+              },
+              {
+                "glob": "ffmpeg-core.wasm",
+                "input": "node_modules/@ffmpeg/core/dist/umd",
+                "output": "ffmpeg"
               }
             ],
             "styles": ["src/styles.css"]
