@@ -49,10 +49,12 @@ export class ReformComponent {
   });
 
   private currentFile: File | null = null;
+  private resultBlob: Blob | null = null;
 
   selectFormat(fmt: OutputFormat): void {
     this.selectedFormat.set(fmt);
     this.resultUrl.set(null);
+    this.resultBlob = null;
     this.processor.reset();
   }
 
@@ -88,6 +90,7 @@ export class ReformComponent {
     if (this.resultUrl())  URL.revokeObjectURL(this.resultUrl()!);
 
     this.resultUrl.set(null);
+    this.resultBlob = null;
     this.processor.reset();
 
     const type = file.type.startsWith('video/') ? 'video' : 'image';
@@ -110,22 +113,33 @@ export class ReformComponent {
     }
 
     if (this.resultUrl()) URL.revokeObjectURL(this.resultUrl()!);
+    this.resultBlob = blob;
     this.resultUrl.set(URL.createObjectURL(blob));
   }
 
-  download(): void {
-    const url = this.resultUrl();
-    if (!url) return;
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = this.resultFilename();
-    a.click();
+  async download(): Promise<void> {
+    if (this.mediaType() === 'video' && this.resultBlob) {
+      const mp4Blob = await this.processor.convertToMp4(this.resultBlob);
+      const url = URL.createObjectURL(mp4Blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.resultFilename();
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } else {
+      const url = this.resultUrl();
+      if (!url) return;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = this.resultFilename();
+      a.click();
+    }
   }
 
   private buildFilename(original: string): string {
     const base = original.replace(/\.[^.]+$/, '');
     const ratio = this.selectedFormat().ratio.replace(':', 'x');
-    const ext   = this.mediaType() === 'video' ? 'webm' : 'jpg';
+    const ext   = this.mediaType() === 'video' ? 'mp4' : 'jpg';
     return `${base}_${ratio}.${ext}`;
   }
 

@@ -1,4 +1,6 @@
 import { Injectable, signal } from '@angular/core';
+import { FFmpeg } from '@ffmpeg/ffmpeg';
+import { fetchFile, toBlobURL } from '@ffmpeg/util';
 import { ProcessingState } from '../models/media.model';
 
 type DrawSource = HTMLImageElement | HTMLVideoElement;
@@ -10,6 +12,30 @@ export class MediaProcessorService {
     progress: 0,
     message: '',
   });
+
+  private ffmpeg: FFmpeg | null = null;
+
+  async convertToMp4(blob: Blob): Promise<Blob> {
+    if (!this.ffmpeg) {
+      this.setState({ status: 'processing', progress: 0, message: 'Cargando conversor…' });
+      const base = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
+      this.ffmpeg = new FFmpeg();
+      await this.ffmpeg.load({
+        coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),
+      });
+    }
+
+    this.setState({ status: 'processing', progress: 50, message: 'Transformando a MP4…' });
+    await this.ffmpeg.writeFile('input.webm', await fetchFile(blob));
+    await this.ffmpeg.exec(['-i', 'input.webm', '-c:v', 'libx264', '-preset', 'fast', '-c:a', 'aac', 'output.mp4']);
+    const raw = await this.ffmpeg.readFile('output.mp4') as Uint8Array;
+    await this.ffmpeg.deleteFile('input.webm');
+    await this.ffmpeg.deleteFile('output.mp4');
+
+    this.setState({ status: 'done', progress: 100, message: '¡Listo!' });
+    return new Blob([new Uint8Array(raw)], { type: 'video/mp4' });
+  }
 
   async processImage(file: File, outW: number, outH: number): Promise<Blob> {
     this.setState({ status: 'processing', progress: 0, message: 'Procesando imagen…' });
