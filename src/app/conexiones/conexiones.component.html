@@ -5,10 +5,24 @@
       <img src="logosinfondo_opt.webp" alt="Vamos Bien logo" class="brand-logo" />
       <h1 class="greeting">Cone<span class="accent">xiones</span></h1>
     </div>
-    <p class="subtitle">Checklist de onboarding de cliente</p>
+    <p class="subtitle">Guía de onboarding de cliente</p>
   </header>
 
   <main class="main">
+
+    <!-- Tabs de etapas -->
+    <div class="stage-tabs" role="tablist">
+      @for (stage of stages(); track stage.id) {
+        <button
+          class="stage-tab"
+          [class.active]="activeStageId() === stage.id"
+          (click)="setStage(stage.id)"
+          role="tab"
+          [attr.aria-selected]="activeStageId() === stage.id">
+          {{ stage.label }}
+        </button>
+      }
+    </div>
 
     <!-- Barra de progreso -->
     <section class="progress-section" aria-label="Progreso">
@@ -20,13 +34,13 @@
         <div class="progress-fill" [style.width.%]="progress()"></div>
       </div>
       @if (progress() === 100) {
-        <p class="progress-complete">¡Onboarding completado!</p>
+        <p class="progress-complete">¡Etapa completada!</p>
       }
     </section>
 
-    <!-- Pasos -->
+    <!-- Lista de pasos -->
     <ol class="steps-list">
-      @for (step of steps(); track step.id) {
+      @for (step of currentStage().steps; track step.id) {
         <li
           class="step-card"
           [class.done]="step.done"
@@ -54,14 +68,21 @@
           </div>
 
           @if (step.open) {
-            <ul class="step-items">
-              @for (item of step.items; track $index) {
-                <li class="step-item">
-                  <span class="item-dot"></span>
-                  <span>{{ item }}</span>
-                </li>
+            <div class="step-body">
+              @for (section of step.sections; track $index) {
+                @if (section.title) {
+                  <p class="section-title">{{ section.title }}</p>
+                }
+                <ul class="section-items">
+                  @for (item of section.items; track $index) {
+                    <li class="step-item">
+                      <span class="item-dot"></span>
+                      <span>{{ item }}</span>
+                    </li>
+                  }
+                </ul>
               }
-            </ul>
+            </div>
           }
 
         </li>
@@ -71,7 +92,7 @@
     <!-- Reset -->
     @if (doneCount() > 0) {
       <div class="actions">
-        <button class="btn btn-ghost" (click)="reset()">Reiniciar checklist</button>
+        <button class="btn btn-ghost" (click)="reset()">Reiniciar etapa</button>
       </div>
     }
 
