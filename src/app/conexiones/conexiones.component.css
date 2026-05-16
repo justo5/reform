@@ -1,0 +1,304 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.app {
+  min-height: 100vh;
+  background: rgba(12, 10, 25, 0.4);
+  backdrop-filter: blur(60px) saturate(120%);
+  -webkit-backdrop-filter: blur(60px) saturate(120%);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  padding: 1.5rem 1rem 4rem;
+}
+
+/* ── Header ── */
+.header {
+  max-width: 540px;
+  margin: 0 auto 2.5rem;
+  text-align: center;
+}
+
+.back-link {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+}
+.back-link:hover { color: #F7941E; }
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.brand-logo {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.35));
+}
+
+.greeting {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: #fff;
+  line-height: 1.1;
+}
+
+.accent { color: #F7941E; }
+
+.subtitle {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Main ── */
+.main {
+  max-width: 540px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Progress ── */
+.progress-section {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.progress-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.progress-count {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #F7941E;
+}
+
+.progress-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F7941E, #ffb85c);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.progress-complete {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b8f06a;
+  text-align: center;
+  padding-top: 0.25rem;
+}
+
+/* ── Steps list ── */
+.steps-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Step card ── */
+.step-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.step-card.done {
+  border-color: rgba(184, 240, 106, 0.3);
+  background: rgba(184, 240, 106, 0.04);
+}
+
+.step-card.open {
+  border-color: rgba(247, 148, 30, 0.35);
+}
+
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem 1.125rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+
+.step-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.step-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* ── Check button ── */
+.check-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.check-btn:hover {
+  border-color: rgba(184, 240, 106, 0.6);
+}
+
+.check-btn.checked {
+  background: rgba(184, 240, 106, 0.18);
+  border-color: #b8f06a;
+}
+
+.check-btn svg {
+  width: 13px;
+  height: 13px;
+  color: #b8f06a;
+}
+
+/* ── Step number ── */
+.step-number {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.3);
+  min-width: 16px;
+  text-align: center;
+}
+
+.step-card.done .step-number {
+  color: rgba(184, 240, 106, 0.5);
+}
+
+/* ── Step title ── */
+.step-title {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.35;
+}
+
+.step-card.done .step-title {
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: line-through;
+  text-decoration-color: rgba(184, 240, 106, 0.4);
+}
+
+/* ── Chevron ── */
+.chevron {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.3);
+  transition: transform 0.25s ease;
+}
+
+.step-card.open .chevron {
+  transform: rotate(180deg);
+  color: #F7941E;
+}
+
+/* ── Step items ── */
+.step-items {
+  list-style: none;
+  padding: 0 1.125rem 1rem 3.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 0.875rem;
+}
+
+.step-item {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+}
+
+.item-dot {
+  margin-top: 0.45rem;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #F7941E;
+  flex-shrink: 0;
+}
+
+.step-item span:last-child {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.55;
+}
+
+/* ── Actions ── */
+.actions {
+  display: flex;
+  justify-content: center;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s, background 0.15s;
+  border: none;
+}
+
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+}

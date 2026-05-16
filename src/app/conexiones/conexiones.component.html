@@ -1,0 +1,79 @@
+<div class="app">
+  <header class="header">
+    <a class="back-link" routerLink="/" aria-label="Volver al inicio">← inicio</a>
+    <div class="brand">
+      <img src="logosinfondo_opt.webp" alt="Vamos Bien logo" class="brand-logo" />
+      <h1 class="greeting">Cone<span class="accent">xiones</span></h1>
+    </div>
+    <p class="subtitle">Checklist de onboarding de cliente</p>
+  </header>
+
+  <main class="main">
+
+    <!-- Barra de progreso -->
+    <section class="progress-section" aria-label="Progreso">
+      <div class="progress-header">
+        <span class="progress-label">Progreso</span>
+        <span class="progress-count">{{ doneCount() }} / {{ total() }}</span>
+      </div>
+      <div class="progress-track" role="progressbar" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-fill" [style.width.%]="progress()"></div>
+      </div>
+      @if (progress() === 100) {
+        <p class="progress-complete">¡Onboarding completado!</p>
+      }
+    </section>
+
+    <!-- Pasos -->
+    <ol class="steps-list">
+      @for (step of steps(); track step.id) {
+        <li
+          class="step-card"
+          [class.done]="step.done"
+          [class.open]="step.open">
+
+          <div class="step-header" (click)="toggle(step.id)" role="button" [attr.aria-expanded]="step.open">
+            <div class="step-left">
+              <button
+                class="check-btn"
+                [class.checked]="step.done"
+                (click)="toggleDone(step.id, $event)"
+                [attr.aria-label]="step.done ? 'Marcar como pendiente' : 'Marcar como completado'">
+                @if (step.done) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                }
+              </button>
+              <span class="step-number">{{ step.id }}</span>
+            </div>
+            <span class="step-title">{{ step.title }}</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+
+          @if (step.open) {
+            <ul class="step-items">
+              @for (item of step.items; track $index) {
+                <li class="step-item">
+                  <span class="item-dot"></span>
+                  <span>{{ item }}</span>
+                </li>
+              }
+            </ul>
+          }
+
+        </li>
+      }
+    </ol>
+
+    <!-- Reset -->
+    @if (doneCount() > 0) {
+      <div class="actions">
+        <button class="btn btn-ghost" (click)="reset()">Reiniciar checklist</button>
+      </div>
+    }
+
+  </main>
+</div>

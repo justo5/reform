@@ -23,5 +23,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./logo-combo/logo-combo.component').then(m => m.LogoComboComponent),
   },
+  {
+    path: 'conexiones',
+    loadComponent: () =>
+      import('./conexiones/conexiones.component').then(m => m.ConexionesComponent),
+  },
   { path: '**', redirectTo: '' },
 ];

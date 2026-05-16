@@ -36,5 +36,13 @@ export class AppsService {
       available: true,
       icon: '🤝',
     },
+    {
+      id: 'conexiones',
+      name: 'Conexiones.',
+      description: 'Checklist de onboarding de cliente',
+      route: '/conexiones',
+      available: true,
+      icon: '🔗',
+    },
   ];
 }
