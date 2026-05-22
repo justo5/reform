@@ -38,56 +38,177 @@
       }
     </section>
 
-    <!-- Lista de pasos -->
-    <ol class="steps-list">
-      @for (step of currentStage().steps; track step.id) {
-        <li
-          class="step-card"
-          [class.done]="step.done"
-          [class.open]="step.open">
+    @if (currentStage().graph) {
 
-          <div class="step-header" (click)="toggle(step.id)" role="button" [attr.aria-expanded]="step.open">
-            <div class="step-left">
-              <button
-                class="check-btn"
-                [class.checked]="step.done"
-                (click)="toggleDone(step.id, $event)"
-                [attr.aria-label]="step.done ? 'Marcar como pendiente' : 'Marcar como completado'">
-                @if (step.done) {
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                }
-              </button>
-              <span class="step-number">{{ step.id }}</span>
-            </div>
-            <span class="step-title">{{ step.title }}</span>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"/>
-            </svg>
-          </div>
+      <!-- Vista de diagrama Mermaid (Conexiones) -->
+      <section class="diagram-wrapper" aria-label="Flujo de conexiones">
+        <div class="diagram-hint">
+          <span class="hint-dot pending"></span> Pendiente
+          <span class="hint-dot done"></span> Completado
+          <span class="hint-tip">Click en un nodo para marcarlo</span>
+        </div>
+        <div #diagram class="mermaid-host"></div>
+      </section>
 
-          @if (step.open) {
-            <div class="step-body">
-              @for (section of step.sections; track $index) {
-                @if (section.title) {
-                  <p class="section-title">{{ section.title }}</p>
-                }
-                <ul class="section-items">
-                  @for (item of section.items; track $index) {
-                    <li class="step-item">
-                      <span class="item-dot"></span>
-                      <span>{{ item }}</span>
-                    </li>
-                  }
-                </ul>
+    } @else {
+
+      <!-- Flujo de checklist (Charla) -->
+      <div class="flow" role="list">
+        @for (step of currentStage().steps; track step.id; let last = $last) {
+          <div class="flow-item" [class.has-branch]="step.noBranch" role="listitem">
+
+            @if (step.question) {
+
+              <!-- NODO CONDICIONAL -->
+              <div class="node decision-node"
+                   [class.done]="step.done"
+                   [class.rejected]="step.answer === 'no' && !step.done">
+                <div class="node-main decision-main">
+                  <button
+                    class="node-icon-btn"
+                    [class.checked]="step.done"
+                    [class.rejected]="step.answer === 'no' && !step.done"
+                    (click)="resetAnswer(step.id, $event)"
+                    [attr.aria-label]="step.done ? 'Reiniciar chequeo' : 'Reiniciar'">
+                    @if (step.done) {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    } @else if (step.answer === 'no') {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    } @else {
+                      <svg class="node-dot" viewBox="0 0 8 8" fill="currentColor">
+                        <circle cx="4" cy="4" r="3"/>
+                      </svg>
+                    }
+                  </button>
+                  <div class="decision-content">
+                    <span class="decision-title">{{ step.title }}</span>
+                    @if (!step.done) {
+                      <p class="question-text">{{ step.question }}</p>
+                      <div class="question-btns">
+                        <button class="q-btn q-yes" [class.active]="step.answer === 'yes'" (click)="setAnswer(step.id, 'yes')">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                          Sí
+                        </button>
+                        <button class="q-btn q-no" [class.active]="step.answer === 'no'" (click)="setAnswer(step.id, 'no')">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                          </svg>
+                          No
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- RAMA (siempre visible) -->
+              @if (step.noBranch) {
+                <div class="branch-split"
+                     [class.answered-yes]="step.answer === 'yes'"
+                     [class.answered-no]="step.answer === 'no'">
+
+                  <div class="yes-bypass">
+                    <div class="bypass-badge">Sí →</div>
+                    <div class="bypass-line"></div>
+                  </div>
+
+                  <div class="no-branch">
+                    <div class="no-badge">No</div>
+                    @for (sub of step.noBranch; track sub.id; let subLast = $last) {
+                      <div class="sub-node" [class.done]="sub.done">
+                        <button
+                          class="sub-check"
+                          [class.checked]="sub.done"
+                          (click)="toggleSubTask(step.id, sub.id)"
+                          [attr.aria-label]="sub.done ? 'Desmarcar' : 'Marcar como hecho'">
+                          @if (sub.done) {
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                              <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                          }
+                        </button>
+                        <span class="sub-title">{{ sub.title }}</span>
+                      </div>
+                      @if (!subLast) {
+                        <div class="sub-connector">
+                          <div class="sub-line"></div>
+                        </div>
+                      }
+                    }
+                  </div>
+
+                </div>
               }
-            </div>
-          }
 
-        </li>
-      }
-    </ol>
+            } @else {
+
+              <!-- NODO TAREA -->
+              <div class="node" [class.done]="step.done" [class.open]="step.open">
+                <div class="node-main" (click)="toggle(step.id)" role="button" [attr.aria-expanded]="step.open">
+                  <button
+                    class="node-icon-btn"
+                    [class.checked]="step.done"
+                    (click)="toggleDone(step.id, $event)"
+                    [attr.aria-label]="step.done ? 'Marcar como pendiente' : 'Marcar como completado'">
+                    @if (step.done) {
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                    } @else {
+                      <svg class="node-dot" viewBox="0 0 8 8" fill="currentColor">
+                        <circle cx="4" cy="4" r="3"/>
+                      </svg>
+                    }
+                  </button>
+                  <span class="node-title">{{ step.title }}</span>
+                  @if (step.sections.length > 0) {
+                    <svg class="node-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  }
+                </div>
+
+                @if (step.open && step.sections.length > 0) {
+                  <div class="node-body">
+                    @for (section of step.sections; track $index) {
+                      @if (section.title) {
+                        <p class="section-title">{{ section.title }}</p>
+                      }
+                      <ul class="section-items">
+                        @for (item of section.items; track $index) {
+                          <li class="step-item">
+                            <span class="item-dot"></span>
+                            <span>{{ item }}</span>
+                          </li>
+                        }
+                      </ul>
+                    }
+                  </div>
+                }
+              </div>
+
+            }
+
+            @if (!last) {
+              <div class="flow-connector">
+                <div class="connector-line"></div>
+                <svg class="connector-arrow" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1.5l5 5 5-5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+
+    }
 
     <!-- Reset -->
     @if (doneCount() > 0) {

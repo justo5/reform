@@ -160,125 +160,134 @@
   padding-top: 0.25rem;
 }
 
-/* ── Steps list ── */
-.steps-list {
-  list-style: none;
+/* ── Flow ── */
+.flow {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: stretch;
 }
 
-/* ── Step card ── */
-.step-card {
+.flow-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ── Nodo base ── */
+.node {
+  width: 100%;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 14px;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.step-card.done {
+.node.done {
   border-color: rgba(184, 240, 106, 0.3);
   background: rgba(184, 240, 106, 0.04);
 }
 
-.step-card.open {
-  border-color: rgba(247, 148, 30, 0.35);
+.node.open {
+  border-color: rgba(247, 148, 30, 0.4);
 }
 
-.step-header {
+.node.rejected {
+  border-color: rgba(247, 100, 30, 0.35);
+  background: rgba(247, 100, 30, 0.03);
+}
+
+/* ── Nodo tarea (fila principal clicable) ── */
+.node-main {
   display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 1rem 1.125rem;
+  align-items: stretch;
   cursor: pointer;
   user-select: none;
   transition: background 0.15s;
 }
 
-.step-header:hover {
-  background: rgba(255, 255, 255, 0.04);
+.node-main:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.step-left {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-/* ── Check button ── */
-.check-btn {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  background: transparent;
-  cursor: pointer;
+/* ── Ícono izquierdo (strip) ── */
+.node-icon-btn {
+  width: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s, background 0.15s;
+  background: rgba(247, 148, 30, 0.1);
+  border: none;
+  border-right: 1px solid rgba(247, 148, 30, 0.18);
   flex-shrink: 0;
+  color: rgba(247, 148, 30, 0.75);
+  cursor: pointer;
   padding: 0;
+  transition: background 0.15s, color 0.15s;
 }
 
-.check-btn:hover { border-color: rgba(184, 240, 106, 0.6); }
-
-.check-btn.checked {
-  background: rgba(184, 240, 106, 0.18);
-  border-color: #b8f06a;
+.node-icon-btn:hover {
+  background: rgba(247, 148, 30, 0.18);
 }
 
-.check-btn svg {
-  width: 13px;
-  height: 13px;
+.node-icon-btn.checked {
+  background: rgba(184, 240, 106, 0.12);
+  border-right-color: rgba(184, 240, 106, 0.22);
   color: #b8f06a;
 }
 
-/* ── Step number ── */
-.step-number {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.3);
-  min-width: 16px;
-  text-align: center;
+.node-icon-btn.rejected {
+  background: rgba(247, 100, 30, 0.15);
+  border-right-color: rgba(247, 100, 30, 0.3);
+  color: #ff7040;
 }
 
-.step-card.done .step-number { color: rgba(184, 240, 106, 0.5); }
+.node-icon-btn svg {
+  width: 15px;
+  height: 15px;
+}
 
-/* ── Step title ── */
-.step-title {
+.node-dot {
+  width: 8px;
+  height: 8px;
+  opacity: 0.55;
+}
+
+/* ── Título del nodo tarea ── */
+.node-title {
   flex: 1;
-  font-size: 0.9rem;
+  padding: 1rem 0.875rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.88);
   line-height: 1.35;
 }
 
-.step-card.done .step-title {
-  color: rgba(255, 255, 255, 0.4);
+.node.done .node-title {
+  color: rgba(255, 255, 255, 0.38);
   text-decoration: line-through;
-  text-decoration-color: rgba(184, 240, 106, 0.35);
+  text-decoration-color: rgba(184, 240, 106, 0.3);
 }
 
 /* ── Chevron ── */
-.chevron {
+.node-chevron {
   width: 18px;
   height: 18px;
+  margin-right: 1rem;
+  align-self: center;
   flex-shrink: 0;
-  color: rgba(255, 255, 255, 0.3);
-  transition: transform 0.25s ease;
+  color: rgba(255, 255, 255, 0.28);
+  transition: transform 0.25s ease, color 0.2s;
 }
 
-.step-card.open .chevron {
+.node.open .node-chevron {
   transform: rotate(180deg);
   color: #F7941E;
 }
 
-/* ── Step body (sections) ── */
-.step-body {
-  padding: 0.875rem 1.125rem 1rem 3.75rem;
+/* ── Cuerpo del acordeón (nodo tarea) ── */
+.node-body {
+  padding: 0.875rem 1rem 1rem 1.125rem;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
@@ -324,6 +333,267 @@
   line-height: 1.55;
 }
 
+/* ── Nodo condicional ── */
+.decision-node { overflow: visible; }
+
+.decision-main {
+  display: flex;
+  align-items: flex-start;
+  cursor: default;
+}
+
+.decision-content {
+  flex: 1;
+  padding: 0.875rem 0.875rem 0.875rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.decision-title {
+  padding-left: 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.35;
+}
+
+.decision-node.done .decision-title {
+  color: rgba(255, 255, 255, 0.38);
+  text-decoration: line-through;
+  text-decoration-color: rgba(184, 240, 106, 0.3);
+}
+
+.question-text {
+  padding-left: 0.875rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.question-btns {
+  display: flex;
+  gap: 0.5rem;
+  padding-left: 0.875rem;
+}
+
+.q-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.q-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+.q-yes {
+  background: rgba(184, 240, 106, 0.07);
+  border-color: rgba(184, 240, 106, 0.2);
+  color: rgba(184, 240, 106, 0.55);
+}
+.q-yes:hover, .q-yes.active {
+  background: rgba(184, 240, 106, 0.16);
+  border-color: rgba(184, 240, 106, 0.5);
+  color: #b8f06a;
+}
+
+.q-no {
+  background: rgba(247, 100, 30, 0.07);
+  border-color: rgba(247, 100, 30, 0.2);
+  color: rgba(247, 100, 30, 0.55);
+}
+.q-no:hover, .q-no.active {
+  background: rgba(247, 100, 30, 0.16);
+  border-color: rgba(247, 100, 30, 0.5);
+  color: #ff7040;
+}
+
+/* ── Bifurcación (siempre visible) ── */
+.branch-split {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 0.5rem;
+  padding: 0 0 0 22px;
+  transition: opacity 0.25s;
+}
+
+/* Camino Sí */
+.yes-bypass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  transition: opacity 0.25s;
+}
+
+.bypass-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(184, 240, 106, 0.5);
+  background: rgba(184, 240, 106, 0.07);
+  border: 1px solid rgba(184, 240, 106, 0.18);
+  border-radius: 99px;
+  padding: 0.18rem 0.45rem;
+  white-space: nowrap;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.bypass-line {
+  width: 2px;
+  flex: 1;
+  min-height: 30px;
+  background: rgba(184, 240, 106, 0.12);
+  transition: background 0.25s;
+}
+
+/* Camino No */
+.no-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  transition: opacity 0.25s;
+}
+
+.no-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(247, 100, 30, 0.6);
+  background: rgba(247, 100, 30, 0.08);
+  border: 1px solid rgba(247, 100, 30, 0.22);
+  border-radius: 99px;
+  padding: 0.18rem 0.45rem;
+  align-self: flex-start;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+/* ── Estados de respuesta ── */
+.branch-split.answered-yes .yes-bypass .bypass-badge {
+  color: #b8f06a;
+  background: rgba(184, 240, 106, 0.15);
+  border-color: rgba(184, 240, 106, 0.4);
+}
+.branch-split.answered-yes .yes-bypass .bypass-line {
+  background: rgba(184, 240, 106, 0.3);
+}
+.branch-split.answered-yes .no-branch {
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+.branch-split.answered-no .yes-bypass {
+  opacity: 0.28;
+}
+.branch-split.answered-no .no-badge {
+  color: #ff7040;
+  background: rgba(247, 100, 30, 0.18);
+  border-color: rgba(247, 100, 30, 0.45);
+}
+
+/* ── Sub-nodo ── */
+.sub-node {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(247, 100, 30, 0.06);
+  border: 1px solid rgba(247, 100, 30, 0.2);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem 0.55rem 0.5rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.sub-node.done {
+  border-color: rgba(184, 240, 106, 0.25);
+  background: rgba(184, 240, 106, 0.04);
+}
+
+.sub-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(247, 100, 30, 0.4);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sub-check:hover { border-color: rgba(247, 100, 30, 0.7); }
+
+.sub-check.checked {
+  background: rgba(184, 240, 106, 0.15);
+  border-color: #b8f06a;
+  color: #b8f06a;
+}
+
+.sub-check svg { width: 11px; height: 11px; }
+
+.sub-title {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.35;
+}
+
+.sub-node.done .sub-title {
+  color: rgba(255, 255, 255, 0.32);
+  text-decoration: line-through;
+  text-decoration-color: rgba(184, 240, 106, 0.3);
+}
+
+.sub-connector {
+  display: flex;
+  justify-content: center;
+  padding: 1px 0;
+  padding-left: 10px;
+}
+
+.sub-line {
+  width: 2px;
+  height: 10px;
+  background: rgba(247, 100, 30, 0.25);
+}
+
+/* ── Conector principal entre nodos ── */
+.flow-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.connector-line {
+  width: 2px;
+  height: 18px;
+  background: linear-gradient(to bottom, rgba(247, 148, 30, 0.35), rgba(247, 148, 30, 0.2));
+}
+
+.connector-arrow {
+  width: 12px;
+  height: 8px;
+  flex-shrink: 0;
+  stroke: rgba(247, 148, 30, 0.38);
+}
+
 /* ── Actions ── */
 .actions {
   display: flex;
@@ -349,4 +619,294 @@
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.8);
+}
+
+/* ── Diagrama Mermaid (Conexiones) ── */
+.diagram-wrapper {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.diagram-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.55);
+  flex-wrap: wrap;
+}
+
+.hint-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+  border: 2px solid #F7941E;
+  background: #1a1530;
+}
+
+.hint-dot.done {
+  border-color: #b8f06a;
+  background: #1f2a14;
+}
+
+.hint-tip {
+  margin-left: auto;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.mermaid-host {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+  min-height: 200px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(247, 148, 30, 0.3) transparent;
+}
+
+.mermaid-error {
+  color: #ff7040;
+  background: rgba(247, 100, 30, 0.08);
+  border: 1px solid rgba(247, 100, 30, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 0.78rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.mermaid-host::-webkit-scrollbar { height: 6px; }
+.mermaid-host::-webkit-scrollbar-track { background: transparent; }
+.mermaid-host::-webkit-scrollbar-thumb {
+  background: rgba(247, 148, 30, 0.3);
+  border-radius: 99px;
+}
+
+.mermaid-host svg {
+  max-width: none !important;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Mermaid node overrides ── */
+.mermaid-host .node rect,
+.mermaid-host .node polygon,
+.mermaid-host .node circle,
+.mermaid-host .node ellipse,
+.mermaid-host .node path {
+  transition: fill 0.2s, stroke 0.2s, filter 0.2s;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.35));
+}
+
+/* Semi-transparent fills/strokes, matching the glass-card system */
+.mermaid-host .node.process > rect {
+  fill: rgba(255, 255, 255, 0.05) !important;
+  stroke: rgba(255, 255, 255, 0.18) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-host .node.decision > polygon,
+.mermaid-host .node.decision > path {
+  fill: rgba(247, 148, 30, 0.08) !important;
+  stroke: rgba(247, 148, 30, 0.4) !important;
+  stroke-width: 1.5px !important;
+}
+
+.mermaid-host .node.done > rect,
+.mermaid-host .node.done > polygon,
+.mermaid-host .node.done > path {
+  fill: rgba(184, 240, 106, 0.07) !important;
+  stroke: rgba(184, 240, 106, 0.45) !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-host .node.terminator > circle,
+.mermaid-host .node.terminator > ellipse {
+  fill: rgba(155, 122, 214, 0.15) !important;
+  stroke: rgba(155, 122, 214, 0.55) !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-host g.node[style*="cursor"]:hover rect,
+.mermaid-host g.node[style*="cursor"]:hover polygon,
+.mermaid-host g.node[style*="cursor"]:hover circle,
+.mermaid-host g.node[style*="cursor"]:hover ellipse {
+  filter: brightness(1.15) drop-shadow(0 0 8px rgba(247, 148, 30, 0.55));
+}
+
+.mermaid-host .nodeLabel,
+.mermaid-host .nodeLabel p {
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  letter-spacing: -0.005em !important;
+}
+
+.mermaid-host .edgeLabel,
+.mermaid-host .edgeLabel p {
+  color: rgba(255, 255, 255, 0.78) !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+  font-size: 0.62rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+.mermaid-host .edgeLabel {
+  background: rgba(12, 10, 25, 0.85) !important;
+  padding: 3px 8px !important;
+  border-radius: 99px !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mermaid-host .edgeLabel.edge-label-yes {
+  background: rgba(184, 240, 106, 0.12) !important;
+  border-color: rgba(184, 240, 106, 0.35);
+}
+.mermaid-host .edgeLabel.edge-label-yes,
+.mermaid-host .edgeLabel.edge-label-yes p {
+  color: #b8f06a !important;
+}
+
+.mermaid-host .edgeLabel.edge-label-no {
+  background: rgba(247, 100, 30, 0.12) !important;
+  border-color: rgba(247, 100, 30, 0.35);
+}
+.mermaid-host .edgeLabel.edge-label-no,
+.mermaid-host .edgeLabel.edge-label-no p {
+  color: #ff8048 !important;
+}
+
+.mermaid-host .edgePaths path {
+  stroke: rgba(247, 148, 30, 0.55);
+  stroke-width: 1.6px;
+}
+
+.mermaid-host marker path,
+.mermaid-host marker polygon {
+  fill: rgba(247, 148, 30, 0.7);
+  stroke: rgba(247, 148, 30, 0.7);
+}
+
+/* ── Desktop: flujo horizontal ── */
+@media (min-width: 768px) {
+  .main {
+    max-width: none;
+    padding: 0 2rem;
+  }
+
+  .stage-tabs,
+  .progress-section,
+  .actions {
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+
+  .flow {
+    flex-direction: row;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(247, 148, 30, 0.25) transparent;
+  }
+
+  .flow::-webkit-scrollbar { height: 4px; }
+  .flow::-webkit-scrollbar-track { background: transparent; }
+  .flow::-webkit-scrollbar-thumb {
+    background: rgba(247, 148, 30, 0.25);
+    border-radius: 99px;
+  }
+
+  /* Nodos sin rama: fila simple [nodo]──►──[nodo] */
+  .flow-item {
+    flex-direction: row;
+    align-items: flex-start;
+    flex-shrink: 0;
+  }
+
+  .node {
+    min-width: 160px;
+    max-width: 185px;
+  }
+
+  .flow-connector {
+    flex-direction: row;
+    align-items: center;
+    width: 28px;
+    height: 2px;
+    padding: 0;
+    align-self: flex-start;
+    margin-top: 26px;
+  }
+
+  .connector-line {
+    flex: 1;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(to right, rgba(247, 148, 30, 0.35), rgba(247, 148, 30, 0.2));
+  }
+
+  .connector-arrow {
+    transform: rotate(-90deg);
+    margin-left: -2px;
+  }
+
+  /* Nodos con rama: grid — [nodo | conector] arriba, [rama] abajo */
+  .flow-item.has-branch {
+    display: grid;
+    grid-template-columns: auto 28px;
+    align-items: start;
+    flex-shrink: 0;
+  }
+
+  .flow-item.has-branch > .node {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .flow-item.has-branch > .branch-split {
+    grid-column: 1;
+    grid-row: 2;
+    max-width: 185px;
+    padding: 0;
+  }
+
+  .flow-item.has-branch > .flow-connector {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    flex-direction: row;
+    align-items: center;
+    width: 28px;
+    height: 2px;
+    padding: 0;
+    margin-top: 0;
+  }
+
+  .flow-item.has-branch > .flow-connector .connector-line {
+    flex: 1;
+    width: auto;
+    height: 2px;
+    background: linear-gradient(to right, rgba(247, 148, 30, 0.35), rgba(247, 148, 30, 0.2));
+  }
+
+  .flow-item.has-branch > .flow-connector .connector-arrow {
+    transform: rotate(-90deg);
+    margin-left: -2px;
+  }
 }

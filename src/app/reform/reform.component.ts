@@ -119,8 +119,11 @@ export class ReformComponent {
 
   async download(): Promise<void> {
     if (this.mediaType() === 'video' && this.resultBlob) {
-      const mp4Blob = await this.processor.convertToMp4(this.resultBlob);
-      const url = URL.createObjectURL(mp4Blob);
+      // If MediaRecorder already produced mp4 (Chrome/Safari), skip the
+      // ffmpeg.wasm conversion — it's expensive and needs COOP/COEP headers.
+      const isMp4 = this.resultBlob.type.includes('mp4');
+      const blob = isMp4 ? this.resultBlob : await this.processor.convertToMp4(this.resultBlob);
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = this.resultFilename();

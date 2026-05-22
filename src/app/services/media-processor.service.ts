@@ -69,16 +69,22 @@ export class MediaProcessorService {
       const canvas = document.createElement('canvas');
       canvas.width  = outW;
       canvas.height = outH;
-      const ctx = canvas.getContext('2d')!;
+      const ctx = canvas.getContext('2d', { alpha: false })!;
 
-      // Small scratch canvases for cheap blur: process at 25% resolution then upscale.
-      // Reduces blur cost ~16× (fewer pixels) with identical visual result.
-      const bgW = Math.ceil(outW * 0.25);
-      const bgH = Math.ceil(outH * 0.25);
-      const bgRaw  = Object.assign(document.createElement('canvas'), { width: bgW, height: bgH });
-      const bgBlur = Object.assign(document.createElement('canvas'), { width: bgW, height: bgH });
-      const bgRawCtx  = bgRaw.getContext('2d')!;
-      const bgBlurCtx = bgBlur.getContext('2d')!;
+      // Cached background: re-rendered only every BG_REFRESH_MS — the blur is
+      // strong enough that updating it ~10×/s is visually identical to every frame.
+      const bg = Object.assign(document.createElement('canvas'), { width: outW, height: outH });
+      const bgCtx = bg.getContext('2d', { alpha: false })!;
+
+      // Tiny scratch for the cheap-blur trick: downscale source aggressively,
+      // then upscale to the cached bg via bilinear interpolation. No CSS filter
+      // anywhere — that's what was eating the frame budget.
+      const tinyW = 48;
+      const tinyH = Math.max(8, Math.ceil(48 * outH / outW));
+      const tiny = Object.assign(document.createElement('canvas'), { width: tinyW, height: tinyH });
+      const tinyCtx = tiny.getContext('2d', { alpha: false })!;
+
+      const BG_REFRESH_MS = 100;
 
       video.addEventListener('loadedmetadata', () => {
         const duration = video.duration;
@@ -88,11 +94,15 @@ export class MediaProcessorService {
         const audioDest = audioCtx.createMediaStreamDestination();
         audioSrc.connect(audioDest);
 
-        const canvasStream = canvas.captureStream(30);
+        // No frame-rate cap on captureStream — let the canvas drive the cadence.
+        const canvasStream = canvas.captureStream();
         audioDest.stream.getAudioTracks().forEach(t => canvasStream.addTrack(t));
 
-        const mimeType = preferredMime();
-        const recorder = new MediaRecorder(canvasStream, { mimeType });
+        const { mime, ext } = preferredMime();
+        const recorder = new MediaRecorder(canvasStream, {
+          mimeType: mime,
+          videoBitsPerSecond: 5_000_000,
+        });
         const chunks: Blob[] = [];
 
         recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
@@ -100,16 +110,49 @@ export class MediaProcessorService {
           URL.revokeObjectURL(video.src);
           audioCtx.close();
           this.setState({ status: 'done', progress: 100, message: '¡Listo!' });
-          resolve(new Blob(chunks, { type: mimeType }));
+          // Tag the blob with the extension so callers can skip ffmpeg when it's mp4.
+          const blob = new Blob(chunks, { type: mime });
+          (blob as Blob & { __ext?: string }).__ext = ext;
+          resolve(blob);
         };
 
-        let raf = 0;
-        const tick = () => {
-          if (video.paused || video.ended) return;
-          this.drawBlurBgFast(ctx, bgRawCtx, bgBlurCtx, video, outW, outH);
+        let stopped = false;
+        let lastBg  = -Infinity;
+        let rafId   = 0;
+
+        const renderFrame = (nowMs: number) => {
+          if (nowMs - lastBg > BG_REFRESH_MS) {
+            this.refreshBlurBg(bgCtx, tinyCtx, video, outW, outH);
+            lastBg = nowMs;
+          }
+          ctx.drawImage(bg, 0, 0);
           this.drawFitFg(ctx, video, outW, outH);
           this.setState({ progress: Math.round((video.currentTime / duration) * 100) });
-          raf = requestAnimationFrame(tick);
+        };
+
+        // Prefer requestVideoFrameCallback: fires exactly once per decoded source
+        // frame, so we render the source's native cadence (24/30/60) rather than
+        // the display refresh rate. Fall back to rAF on browsers without it.
+        const hasRVFC = typeof (video as HTMLVideoElement & { requestVideoFrameCallback?: unknown }).requestVideoFrameCallback === 'function';
+
+        const tickRVFC = (_now: number, _metadata: { mediaTime: number; presentationTime: number }) => {
+          if (stopped || video.ended) return;
+          renderFrame(performance.now());
+          (video as HTMLVideoElement & { requestVideoFrameCallback: (cb: (n: number, m: { mediaTime: number; presentationTime: number }) => void) => number }).requestVideoFrameCallback(tickRVFC);
+        };
+
+        const tickRAF = () => {
+          if (stopped || video.paused || video.ended) return;
+          renderFrame(performance.now());
+          rafId = requestAnimationFrame(tickRAF);
+        };
+
+        const startTicking = () => {
+          if (hasRVFC) {
+            (video as HTMLVideoElement & { requestVideoFrameCallback: (cb: (n: number, m: { mediaTime: number; presentationTime: number }) => void) => number }).requestVideoFrameCallback(tickRVFC);
+          } else {
+            rafId = requestAnimationFrame(tickRAF);
+          }
         };
 
         recorder.start();
@@ -117,42 +160,45 @@ export class MediaProcessorService {
         // before any samples flow through it.
         audioCtx.resume()
           .then(() => video.play())
-          .then(tick)
+          .then(startTicking)
           .catch(reject);
-        video.addEventListener('ended', () => { cancelAnimationFrame(raf); recorder.stop(); });
-        video.addEventListener('error',  () => { cancelAnimationFrame(raf); reject(new Error('Error al leer el video')); });
+        video.addEventListener('ended', () => { stopped = true; cancelAnimationFrame(rafId); recorder.stop(); });
+        video.addEventListener('error',  () => { stopped = true; cancelAnimationFrame(rafId); reject(new Error('Error al leer el video')); });
       });
 
       video.addEventListener('error', () => { audioCtx.close(); reject(new Error('Error al leer el video')); });
     });
   }
 
-  // 3-pass blur used for video: operate at 25% resolution then upscale — ~16× cheaper.
-  private drawBlurBgFast(
-    ctx: CanvasRenderingContext2D,
-    rawCtx: CanvasRenderingContext2D,
-    blurCtx: CanvasRenderingContext2D,
+  // Cheap blur: aggressive downscale + bilinear upscale. The browser's image
+  // interpolation does the "blur" for us — no CSS filter, fully GPU-friendly.
+  private refreshBlurBg(
+    bgCtx: CanvasRenderingContext2D,
+    tinyCtx: CanvasRenderingContext2D,
     src: HTMLVideoElement,
     w: number,
     h: number
   ): void {
     const { sw, sh } = naturalSize(src);
-    const bgW = rawCtx.canvas.width, bgH = rawCtx.canvas.height;
-    const scale = Math.max(bgW / sw, bgH / sh) * 1.08;
+    if (!sw || !sh) return;
+
+    const tw = tinyCtx.canvas.width;
+    const th = tinyCtx.canvas.height;
+    const scale = Math.max(tw / sw, th / sh) * 1.08;
     const dw = sw * scale, dh = sh * scale;
-    const dx = (bgW - dw) / 2, dy = (bgH - dh) / 2;
+    const dx = (tw - dw) / 2, dy = (th - dh) / 2;
 
-    // Pass 1: draw current video frame at small size (no filter).
-    rawCtx.drawImage(src, dx, dy, dw, dh);
+    // Source → tiny (covers the tiny canvas).
+    tinyCtx.drawImage(src, dx, dy, dw, dh);
 
-    // Pass 2: blur the small frame (8px here ≈ 32px at full scale after upscaling).
-    blurCtx.save();
-    blurCtx.filter = 'blur(8px) brightness(0.72) saturate(1.2)';
-    blurCtx.drawImage(rawCtx.canvas, 0, 0);
-    blurCtx.restore();
+    // Tiny → bg full size. Bilinear upscale ≈ Gaussian blur.
+    bgCtx.imageSmoothingEnabled = true;
+    bgCtx.imageSmoothingQuality = 'high';
+    bgCtx.drawImage(tinyCtx.canvas, 0, 0, w, h);
 
-    // Pass 3: scale the blurred small canvas up to the output canvas (no filter).
-    ctx.drawImage(blurCtx.canvas, 0, 0, w, h);
+    // Darken (was brightness(0.72) in the old CSS filter).
+    bgCtx.fillStyle = 'rgba(0,0,0,0.28)';
+    bgCtx.fillRect(0, 0, w, h);
   }
 
   private drawBlurBg(ctx: CanvasRenderingContext2D, src: DrawSource, w: number, h: number): void {
@@ -212,11 +258,17 @@ function canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number):
   );
 }
 
-function preferredMime(): string {
-  const candidates = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm',
+function preferredMime(): { mime: string; ext: 'mp4' | 'webm' } {
+  // mp4 first: H.264 is usually hardware-accelerated, so encoding is far cheaper
+  // than VP8/VP9 software encode, and we skip the ffmpeg.wasm conversion step
+  // entirely. Falls back to webm on Firefox.
+  const candidates: { mime: string; ext: 'mp4' | 'webm' }[] = [
+    { mime: 'video/mp4;codecs=avc1.42E01F,mp4a.40.2', ext: 'mp4' },
+    { mime: 'video/mp4;codecs=avc1,mp4a.40.2',        ext: 'mp4' },
+    { mime: 'video/mp4',                              ext: 'mp4' },
+    { mime: 'video/webm;codecs=vp8,opus',             ext: 'webm' },
+    { mime: 'video/webm;codecs=vp9,opus',             ext: 'webm' },
+    { mime: 'video/webm',                             ext: 'webm' },
   ];
-  return candidates.find(m => MediaRecorder.isTypeSupported(m)) ?? 'video/webm';
+  return candidates.find(c => MediaRecorder.isTypeSupported(c.mime)) ?? { mime: 'video/webm', ext: 'webm' };
 }
