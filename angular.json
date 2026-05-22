@@ -51,12 +51,12 @@
               },
               {
                 "glob": "ffmpeg-core.js",
-                "input": "node_modules/@ffmpeg/core/dist/umd",
+                "input": "node_modules/@ffmpeg/core/dist/esm",
                 "output": "ffmpeg"
               },
               {
                 "glob": "ffmpeg-core.wasm",
-                "input": "node_modules/@ffmpeg/core/dist/umd",
+                "input": "node_modules/@ffmpeg/core/dist/esm",
                 "output": "ffmpeg"
               }
             ],
