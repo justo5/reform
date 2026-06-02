@@ -44,5 +44,13 @@ export class AppsService {
       available: true,
       icon: '🔗',
     },
+    {
+      id: 'redirecciones',
+      name: 'Redirecciones.',
+      description: '',
+      route: '/redirecciones',
+      available: true,
+      icon: '↪️',
+    },
   ];
 }

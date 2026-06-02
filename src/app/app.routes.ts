@@ -28,5 +28,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./conexiones/conexiones.component').then(m => m.ConexionesComponent),
   },
+  {
+    path: 'redirecciones',
+    canActivate: [() => { window.location.href = 'https://tinyurl.com/3w2xs8n3'; return false; }],
+    component: class {},
+  },
   { path: '**', redirectTo: '' },
 ];
